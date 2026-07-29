@@ -15,7 +15,20 @@ typedef struct{
     int length;
 } LZ77Token;
 
-
+/*
+    * @brief does the LZ77 compression algorithm
+    *
+    * This function takes a pointer on where to start compression, number of bytes to compress 
+    * and an array of pointers on tokens, it fills the array with the lz77 tokens and returns the 
+    * number of tokens
+    * 
+    * @param to_compress  uint8_t pointer on where to start
+    * @param length_bytes int how many bytes to compress
+    * @param tokens       an array of LZ77Token pointers to fill
+    * 
+    * @return             number of tokens
+    * 
+*/
 
 
 int compress_LZ77(uint8_t *to_compress, int length_bytes, LZ77Token *tokens){ //you need to add arguments for this fundtion (check claude's suggestion)
@@ -44,19 +57,19 @@ int compress_LZ77(uint8_t *to_compress, int length_bytes, LZ77Token *tokens){ //
     //to_compress = to_compress + la_cursor_index;
 
     while (la_cursor_index < length_bytes){
-        int memo_index = 0; //this variable memorizes where we left off in the previous match so that we don't start over from the beginning
+        int memo_index = (la_cursor_index - WINDOW > 0) ? la_cursor_index - WINDOW : 0; //this variable memorizes where we left off in the previous match so that we don't start over from the beginning
         int i = 0;
         int max_match = 0;
         int distance = 0;
 
         (*(tokens + la_cursor_index)).is_reference = 0; 
         (*(tokens + la_cursor_index)).caracter = *(to_compress + la_cursor_index);
-        //(*(tokens + la_cursor_index)).distance = 0;
-        //(*(tokens + la_cursor_index)).length = 1;
+        (*(tokens + la_cursor_index)).distance = 0;
+        (*(tokens + la_cursor_index)).length = 1;
 
-        while(memo_index < ((WINDOW < la_cursor_index) ? WINDOW : la_cursor_index)){
+        while(memo_index < ((WINDOW < length_bytes) ? WINDOW : length_bytes)){
             int match_cursor = 0;
-            while(*(to_compress + match_cursor) == *(window_cursor + match_cursor + memo_index) && match_cursor + la_cursor_index < length_bytes){
+            while(*(to_compress + la_cursor_index + match_cursor) == *(window_cursor + match_cursor + memo_index) && (match_cursor + la_cursor_index < length_bytes)){
                 match_cursor++;
                 i++;
             }
@@ -81,7 +94,7 @@ int compress_LZ77(uint8_t *to_compress, int length_bytes, LZ77Token *tokens){ //
         }
         if(max_match > 1){
             (*(tokens + la_cursor_index)).is_reference = 1; 
-            //(*(tokens + la_cursor_index)).caracter = *(to_compress + la_cursor_index);
+            (*(tokens + la_cursor_index)).caracter = *(to_compress + la_cursor_index);
             (*(tokens + la_cursor_index)).distance = distance;
             (*(tokens + la_cursor_index)).length = max_match;
 
@@ -99,6 +112,10 @@ int succerssor(int n){
 
 
 int main(){
+    char input[20];
+    LZ77Token tokens[20];
+    scanf("%s", input);
+    uint8_t *to_compress = (uint8_t *)input;
     /*LZ77Token token_list[3];
     for(int i = 0; i < 3; i++){
         scanf("%d", &token_list[i].is_reference);
@@ -118,13 +135,21 @@ int main(){
     }
     printf("%s", mot);
     printf("%p", mot);*/
-    int i = 5;
-    printf("%d", succerssor(i));
+    int len = compress_LZ77(to_compress, 20, tokens);
+    printf("number of tokens %d\n", len);
+
+    for(int i = 0; i < len; i++){
+        printf("is it a reference %d\n", (tokens + i)->is_reference);
+        printf("caracter %c\n", (char)((tokens + i)->caracter));
+        printf("distance %d\n", ((tokens + i)->distance));
+        printf("length %d\n", ((tokens + i)->length));
+        printf("==========================================\n");
+    }
     return 0;
 }
 
 // is there a difference between code1 and code2  
-
+/*
 code1(){
     int x = 4;
     int *X = &x;
@@ -137,3 +162,4 @@ code2(){
     int *X = &x;
     int *Y = X;
 }
+*/
