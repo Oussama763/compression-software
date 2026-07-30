@@ -62,7 +62,7 @@ int compress_LZ77(uint8_t *to_compress, int length_bytes, LZ77Token *tokens){ //
         int max_match = 0;
         int distance = 0;
 
-        (*(tokens + la_cursor_index)).is_reference = 0; 
+        (*(tokens + la_cursor_index)).is_reference = 0;
         (*(tokens + la_cursor_index)).caracter = *(to_compress + la_cursor_index);
         (*(tokens + la_cursor_index)).distance = 0;
         (*(tokens + la_cursor_index)).length = 1;
